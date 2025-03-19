@@ -21,7 +21,7 @@ jobs:
           host: "windows"
           target: "desktop"
           arch: "win64_mingw"
-          tools: "tools_win64"
+          tools: "tools_mingw"
 
       # 3. Настройка MinGW
       - name: Set up MinGW
