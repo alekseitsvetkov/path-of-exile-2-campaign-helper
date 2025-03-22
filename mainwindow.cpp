@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Настройка QLabel для отображения изображений
     imageLabel = ui->imageLabel;
-    imageLabel->setFixedSize(800, 800); // Устанавливаем фиксированный размер
+    imageLabel->setFixedSize(1000, 1000); // Устанавливаем фиксированный размер
     imageLabel->setScaledContents(true); // Масштабируем изображение под размер QLabel
 
     // Подключаем кнопки к слотам
@@ -105,7 +105,7 @@ void MainWindow::initializeFileMonitoring(const QString &filePath)
     lastReadPosition = file.size();
     file.close();
 
-    ui->textEdit->clear();
+    ui->locationNameLabel->clear();
     fileWatcher.addPath(filePath);
 }
 
@@ -135,8 +135,8 @@ void MainWindow::checkFileForChanges()
         // Обрабатываем строку лога через LogFilter
         QString locationName = logFilter.processLogLine(line);
         if (!locationName.isEmpty()) {
-            ui->textEdit->clear();
-            ui->textEdit->appendPlainText(locationName);
+            ui->locationNameLabel->clear();
+            ui->locationNameLabel->setText(locationName);
 
             // Загружаем изображения для текущей локации
             QString locationCode = logFilter.getLastLocationCode();
@@ -146,22 +146,8 @@ void MainWindow::checkFileForChanges()
     }
 
     lastReadPosition = file.pos();
-    ui->textEdit->ensureCursorVisible();
 
     file.close();
-}
-
-void MainWindow::appendText(const QString &text)
-{
-    ui->textEdit->appendPlainText(text);
-
-    const int MAX_LINES = 1000;
-    QStringList lines = ui->textEdit->toPlainText().split('\n');
-    if (lines.size() > MAX_LINES) {
-        ui->textEdit->setPlainText(lines.mid(lines.size() - MAX_LINES).join("\n"));
-    }
-
-    ui->textEdit->ensureCursorVisible();
 }
 
 void MainWindow::loadImagesForLocation(const QString &locationCode)
@@ -175,9 +161,9 @@ void MainWindow::loadImagesForLocation(const QString &locationCode)
         // Очищаем QLabel
         imageLabel->clear();
 
-        // Отключаем кнопки переключения
-        ui->btnPrevious->setEnabled(false);
-        ui->btnNext->setEnabled(false);
+        // Скрываем кнопки переключения
+        ui->btnPrevious->setVisible(false);
+        ui->btnNext->setVisible(false);
 
         return;
     }
@@ -188,8 +174,8 @@ void MainWindow::loadImagesForLocation(const QString &locationCode)
 
     // Включаем или отключаем кнопки в зависимости от количества изображений
     bool hasMultipleImages = images.size() > 1;
-    ui->btnPrevious->setEnabled(hasMultipleImages);
-    ui->btnNext->setEnabled(hasMultipleImages);
+    ui->btnPrevious->setVisible(hasMultipleImages);
+    ui->btnNext->setVisible(hasMultipleImages);
 
     // Отображаем первое изображение
     showCurrentImage();
@@ -209,9 +195,11 @@ void MainWindow::showCurrentImage()
 
     if (pixmap.isNull()) {
         imageLabel->setText("Failed to load image");
-    } else {
-        imageLabel->setPixmap(pixmap.scaled(imageLabel->size(), Qt::KeepAspectRatio));
+        return;
     }
+
+    // Устанавливаем изображение с сохранением пропорций
+    imageLabel->setPixmap(pixmap);
 }
 
 void MainWindow::showNextImage()
